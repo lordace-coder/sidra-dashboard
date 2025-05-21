@@ -1,32 +1,58 @@
 import { createContext, useContext, useState } from "react";
 
-const AuthContext = createContext(null);
+const defaultAuthState = {
+  email: null,
+  password: null,
+  isAuthenticated: false,
+  logs: [],
+  totalPages: 1,
+  totalItems: 0,
+  currentPage: 1,
+};
+
+const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState({
-    email: null,
-    password: null,
-    isAuthenticated: false,
-  });
+  const [auth, setAuth] = useState(defaultAuthState);
 
   const login = (email, password) => {
-    setAuth({ email, password, isAuthenticated: true });
+    const isValid =
+      email === "bolaybuthd@gmail.com" && password === "stre123ngth";
+    setAuth((prev) => ({
+      ...prev,
+      email: isValid ? email : null,
+      password: isValid ? password : null,
+      isAuthenticated: isValid,
+    }));
+    return isValid;
   };
 
+  const updateLogs = (logs, totalPages, totalItems, currentPage) => {
+    setAuth((prev) => ({
+      ...prev,
+      logs,
+      totalPages,
+      totalItems,
+      currentPage,
+    }));
+  };
   const logout = () => {
-    setAuth({ email: null, password: null, isAuthenticated: false });
+    setAuth(defaultAuthState);
   };
 
-  return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    auth,
+    login,
+    logout,
+    updateLogs,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
